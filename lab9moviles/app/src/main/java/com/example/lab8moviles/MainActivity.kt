@@ -7,10 +7,13 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import com.example.lab8moviles.navigation.Characters
+import com.example.lab8moviles.navigation.CharacterDetail
 import com.example.lab8moviles.navigation.Login
-import com.example.lab8moviles.navigation.Main
+import com.example.lab8moviles.ui.characterdetail.CharacterDetailScreen
+import com.example.lab8moviles.ui.characters.CharactersScreen
 import com.example.lab8moviles.ui.login.LoginScreen
-import com.example.lab8moviles.ui.main.MainScreen
 import com.example.lab8moviles.ui.theme.Lab8MovilesTheme
 
 class MainActivity : ComponentActivity() {
@@ -27,24 +30,29 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavHost() {
     val navController = rememberNavController()
-    NavHost(navController, startDestination = Login::class.simpleName ?: "Login") { // Use string or class name
-        composable(route = Login::class.simpleName ?: "Login") { // Use string route
+    NavHost(navController = navController, startDestination = Login) {
+        composable<Login> {
             LoginScreen(
                 onStart = {
-                    navController.navigate(Main::class.simpleName ?: "Main") {
-                        popUpTo(Login::class.simpleName ?: "Login") { inclusive = true }
+                    navController.navigate(Characters) {
+                        popUpTo<Login> { inclusive = true }
                     }
                 },
                 logoUrl = "https://1000logos.net/wp-content/uploads/2022/03/Rick-and-Morty.png"
             )
         }
-        composable(route = Main::class.simpleName ?: "Main") { // Use string route
-            MainScreen(
-                onLogout = {
-                    navController.navigate(Login::class.simpleName ?: "Login") {
-                        popUpTo(0) { inclusive = true }
-                    }
+        composable<Characters> {
+            CharactersScreen(
+                onCharacterClick = { id ->
+                    navController.navigate(CharacterDetail(id))
                 }
+            )
+        }
+        composable<CharacterDetail> { backStackEntry ->
+            val detail = backStackEntry.toRoute<CharacterDetail>()
+            CharacterDetailScreen(
+                characterId = detail.characterId,
+                onBack = { navController.popBackStack() }
             )
         }
     }
